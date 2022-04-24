@@ -1,0 +1,98 @@
+httpd-2.2.15-69.el6.centos.x86_64.rpm
+httpd-tools-2.2.15-69.el6.centos.x86_64.rpm
+mod_dav_svn-1.6.11-15.el6_7.x86_64.rpm
+subversion-1.6.11-15.el6_7.x86_64.rpm
+
+sudo yum install *.rpm
+vi /etc/httpd/conf.d/subversion.conf 
+
+<Location /svn>
+   DAV svn
+   SVNParentPath /var/www/svn
+
+   # Limit write permission to list of valid users.
+   <LimitExcept GET PROPFIND OPTIONS REPORT>
+      # Require SSL connection for password protection.
+      # SSLRequireSSL
+
+      AuthType Basic
+      AuthName "Subversion repositories"
+      AuthUserFile /etc/svn-auth-users
+      Require valid-user
+   </LimitExcept>
+</Location>
+
+cd /etc/
+htpasswd -cm /etc/svn-auth-users testuser
+mkdir /var/www/svn
+cd /var/www/svn
+svnadmin create testrepo
+chown -R apache:apache testrepo
+sudo service httpd start
+sudo service svnserve restart
+===============================
+jenkins steps:-
+
+install java-1.8
+sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat/jenkins.io.key
+yum install jenkins
+service jenkins restart
+
+cat /var/lib/jenkins/secrets/initialAdminPassword
+install git,maven,deploy(deploy to container),build pipeline,matrix authendication
+======================================================
+Maven steps:-
+install java-1.8
+1)sudo wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+sudo sed -i s/\$releasever/6/g /etc/yum.repos.d/epel-apache-maven.repo
+sudo yum install -y apache-maven
+2)sudo wget http://mirrors.ibiblio.org/apache/maven/maven-3/3.6.0/binaries/apache-maven-3.6.0-bin.tar.gz –P /opt
+
+sudo tar -xvf /opt/apache-maven-3.6.0-bin.tar.gz 
+mv apache-maven-3.6.0 /opt/apache-maven-3.6.0
+mvn --version
+vi .bash_profile
+PATH=$PATH:$HOME/bin
+M2_HOME='/opt/apache-maven-3.6.0'
+PATH="$M2_HOME/bin:$PATH"
+export PATH
+export PATH
+mvn clean install
+mvn package -Dmaven.test.skip=true
+=====================================================
+Tomcat7 install:-
+install java-1.8
+donwload from google 
+apache-tomcat-7.0.106.tar.gz
+sudo tar -xvf apache-tomcat-7.0.106.tar.gz
+sudo mkdir /opt/tomcat
+mv apache-tomcat-7.0.106 /opt/tomcat
+sudo chown -R tomcat:tomcat *
+vi /opt/tomcat/conf/tomcat-users.xml
+<tomcat-users>
+    <user username="admin" password="admin" roles="manager-gui,admin-gui"/>
+</tomcat-users>
+restart tomcat 
+/opt/tomcat/shutdonwn.sh
+/opt/tomcat/startup.sh
+mvn package -Dmaven.test.skip=true
+=================================================================================
+install Nexus:-
+install java 1.8
+sudo wget -O nexus.tar.gz https://download.sonatype.com/nexus/3/latest-unix.tar.gz
+sudo tar -xvf nexus.tar.gz
+sudo mv nexus-3* nexus
+mv * /opt/nexus
+chown -R nexus:nexus *
+sudo vi  /opt/nexus/bin/nexus.rc  run_as_user="nexus"
+sudo chkconfig nexus on
+=====================================================
+git init
+git add *
+git commit -m "deploy"
+git remote add origin https://github.com/ganesh321/deploytocontainer.git
+git push -u https://github.com/ganesh321/deploytocontainer.git
+git pull https://github.com/ganesh321/deploytocontainer.git
+====================================
+
